@@ -180,6 +180,12 @@ export type Messages = {
   notifReady: string;
   notifMissing: string;
   devSection: string;
+  expoGoLimits: string;
+  expoGoGoogle: string;
+  expoGoPro: string;
+  expoGoImport: string;
+  expoGoWidgets: string;
+  expoGoGeofence: string;
 };
 
 export const ja: Messages = {
@@ -365,6 +371,14 @@ export const ja: Messages = {
   notifReady: "通知は許可されています",
   notifMissing: "通知はまだ許可されていません",
   devSection: "開発者向け",
+  expoGoLimits:
+    "Expo Go では、リスト、リマインダー、繰り返し、ローカル通知（完了と10分スヌーズ）、期限超過の全画面、バックアップが使えます。Live Activity、ホームウィジェット、ストア課金、iPhoneリマインダーの読み込み、場所の監視、このアプリ専用のネイティブ機能は開発ビルドが必要です。Proの確認は「開発用にProを解放」を使ってください。",
+  expoGoGoogle:
+    "Expo Go では Google サインインを使えません。Google は Expo Go の exp:// リダイレクトを受け付けず、ネイティブの Google Sign-In も Expo Go には入りません。カレンダー同期は開発ビルドで試してください。",
+  expoGoPro: "Expo Go にはストア課金が入っていません。鬼モードと場所の確認は「開発用にProを解放」を使ってください。",
+  expoGoImport: "Expo Go では iPhone のリマインダー（EventKit）を読み込めません。開発ビルドが必要です。",
+  expoGoWidgets: "Expo Go では Live Activity とホームウィジェットは動きません。通知そのものは届きます。Time Sensitive の割り込みは Expo Go 側の権限に依存し、通常の通知になることがあります。",
+  expoGoGeofence: "Expo Go では到着と離脱の監視は動きません。場所の内容は保存されますが、通知は出ません。",
 };
 
 export const en: Messages = {
@@ -550,4 +564,13 @@ export const en: Messages = {
   notifReady: "Notifications are allowed",
   notifMissing: "Notifications are not allowed yet",
   devSection: "Developer",
+  expoGoLimits:
+    "In Expo Go you can use lists, reminders, repeats, local notifications (Done and Snooze 10 min), the overdue full-screen gate, and backup. Live Activity, home widgets, store purchases, iPhone Reminders import, place monitoring, and this app's own native module need a development build. Use Unlock Pro for development to try Pro.",
+  expoGoGoogle:
+    "Google sign-in is unavailable in Expo Go. Google does not accept Expo Go's exp:// redirect, and the native Google Sign-In module is not in Expo Go. Use a development build to sync calendars.",
+  expoGoPro: "Store purchases are not in Expo Go. Use Unlock Pro for development to try Oni mode and places.",
+  expoGoImport: "Expo Go cannot read iPhone Reminders (EventKit). That needs a development build.",
+  expoGoWidgets:
+    "Live Activity and home widgets do not run in Expo Go. Local notifications still arrive. Time Sensitive delivery depends on Expo Go and may fall back to a normal alert.",
+  expoGoGeofence: "Arrive and leave monitoring does not run in Expo Go. The place is saved, but it will not notify you.",
 };

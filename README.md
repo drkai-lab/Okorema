@@ -31,6 +31,70 @@ npx expo run:ios
 
 iOS のデプロイメントターゲットは 17.0、Android の minSdk は 34 です。識別子は `app.okorema.mobile`、URL スキームは `okorema` です。
 
+## iPhone の Expo Go で試す
+
+このアプリの Expo SDK は **57**（`expo` の `latest`）です。公式の案内では、**Apple App Store の Expo Go は SDK 54 で止まっていて、SDK 55 以降は配信されていません**。
+
+- 不一致の説明: https://docs.expo.dev/troubleshooting/expo-go-version-mismatch/
+- SDK 57 のリリースノートでも、App Store 承認待ちのあいだ iOS 実機の Expo Go は `eas go` だと書かれています: https://expo.dev/changelog/sdk-57
+
+そのため、App Store から入れた Expo Go でこのプロジェクトの QR を読むと、「Project is incompatible with this version of Expo Go」になります。SDK 54 へプロジェクト全体を下げると、Android の正確なアラーム、全画面インテント、Live Activity、ウィジェットの現行実装と揃わなくなるので、SDK は 57 のままです。iPhone で開くには、SDK 57 の Expo Go を自分の Apple Developer アカウントで配ります。
+
+### 自分の PC で開発サーバーを立てる
+
+Node.js 20 以上が要ります。リポジトリを取得したディレクトリで:
+
+```bash
+npm install
+npx expo start --go --tunnel
+```
+
+`expo-dev-client` が入っているので、フラグなしの `npx expo start` は開発ビルド用の QR になります。Expo Go で開くときは必ず `--go` を付けるか、起動後に `s` を押して Expo Go に切り替えてください。別の Wi-Fi にいる iPhone からは `--tunnel` が必要です。同じ LAN なら `npx expo start --go` でも届きます。
+
+1. iPhone に **SDK 57 の Expo Go** を入れます。App Store 版では足りません。Expo アカウントで `npx expo login` したあと、Apple Developer Program のメンバーシップがある Mac か、EAS が使える環境で次を実行し、TestFlight からインストールします。
+
+   ```bash
+   npx eas-cli go --sdk-version 57.0.0
+   ```
+
+   手順の補足: https://docs.expo.dev/troubleshooting/expo-go-version-mismatch/ と https://github.com/expo/fyi/blob/main/personal-expo-go.md
+2. PC のターミナルに出た QR を、iPhone のカメラか Expo Go のスキャンで読みます。
+3. 初回は Expo の開発サーバーへの接続を許可します。最新の Expo Go は、CLI とアプリの両方で同じ Expo アカウントにログインしていることを求めることがあります。
+
+Android の Expo Go は https://expo.dev/go から SDK 57 を選べます。Play ストア版が遅れているときは、そちらを使ってください。
+
+### Expo Go で動くもの / 動かないもの
+
+動くもの: リスト、リマインダー、繰り返し、完了とスヌーズ、粘りのあるローカル通知（Expo Go が許す範囲のアクション「完了にする」「10分後にスヌーズ」）、期限超過の全画面、バックアップの書き出しと追加読み込み。Pro は設定の「開発用にProを解放」で切り替えます。
+
+動かないもの（起動時に読み込まず、画面で理由を出します）:
+
+- ローカルモジュール `okorema-native`（Android の正確なアラーム、全画面インテント、常駐カウントダウン、ウィジェット、Keep への専用共有）。Keep への共有は OS の共有シートに落ちます。
+- iOS の Live Activity / Dynamic Island とホームウィジェット（`expo-widgets`）。
+- ストア課金（`expo-iap`）。購入と復元のボタンは無効で、開発用の Pro スイッチを使います。
+- Google サインイン。`@react-native-google-signin/google-signin` は Expo Go に無く、`expo-auth-session` も Google が `exp://` のリダイレクトを拒否するため完了できません。同期画面にその旨を出します。
+- iPhone リマインダー（EventKit）の読み込み。
+- 場所の到着 / 離脱の監視。場所の文字列は保存できますが、ジオフェンスは登録しません。
+- Time Sensitive は Expo Go 本体の権限次第で、通常の通知になることがあります。
+- バックグラウンドの定期同期は登録しません。
+
+### 開発サーバーなしで開く（EAS Update）
+
+可能です。ただし次が要ります。
+
+1. Expo アカウントを作り、自分の PC で `npx expo login` する。
+2. プロジェクトを expo.dev に結びつける（`npx eas-cli init`）。`eas.json` がまだ無ければ CLI が案内します。
+3. JS バンドルを公開する。
+
+   ```bash
+   npx eas-cli update --channel preview --platform ios --message "Expo Go preview"
+   ```
+
+4. 出たリンクまたは QR を、**SDK 57 の Expo Go**（上記の `eas go` で入れたもの）で開く。App Store の Expo Go（SDK 54）では同じリンクも開けません。
+5. EAS Update に含まれるのは JavaScript だけです。カスタムのネイティブコードは入らないので、制限は上の Expo Go と同じです。
+
+この環境にはユーザーの Expo アカウントが無いため、公開用の expo.dev リンクは作っていません。ログインは各自の PC で行ってください。
+
 ## 画面
 
 初回はオンボーディングです。通知の許可は、期限のあるリマインダーを最初に保存するときにだけ尋ねます。追加ボタンは画面下の中央にあり、片手で届きます。期限を過ぎたリマインダーが残っているあいだ、アプリを開くと全画面の確認が先に出ます。完了、10分スヌーズ、または確認つきの削除を選ぶまで、ほかの操作はできません。「すべて10分後」はまとめてスヌーズします。
@@ -138,14 +202,15 @@ Google ToDo はリストとタスクを双方向に写します。タイトル�
 
 ## 検証と未検証
 
-`npm test`、`npm run typecheck`、`npm run lint`、`npx expo prebuild` の結果は開発時の記録に従います。Linux では Xcode がないため、次は未検証です。
+`npm test`、`npm run typecheck`、`npm run lint`、`npx expo prebuild`、`npx expo export --platform ios` は通しています。Android は `./gradlew assembleDebug` でデバッグ APK（arm64-v8a、Pixel 8 向け）まで通しています。Linux では Xcode がないため、次は未検証です。
 
-- iOS のコンパイル、Live Activity、ホーム画面ウィジェット、Time Sensitive の Focus 突破
+- iOS のネイティブコンパイル、Live Activity、ホーム画面ウィジェット、Time Sensitive の Focus 突破
 - EventKit からの実取り込み
 - StoreKit / Play Billing のサンドボックス購入
 - 実機の正確なアラーム許可と全画面インテント
+- 実機の iPhone での Expo Go 起動（この環境に iPhone はない。iOS の JS バンドル書き出しだけ確認済み）
 
-Android の Kotlin は prebuild でプロジェクトに接続されます。エミュレータがこの環境にない場合、画面の確認は Expo の web 実行で代替しています。
+システムイメージを置いていないため、エミュレータへのインストールはしていません。APK は arm64-v8a だけなので、x86_64 のエミュレータには載りません。
 
 ## テスト
 

@@ -1,10 +1,11 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { useLayoutEffect, useState } from "react";
-import { Modal, Platform, Pressable, Text, TextInput, View } from "react-native";
+import { Modal, Platform, Pressable, Share, Text, TextInput, View } from "react-native";
 
 import { GEOFENCE_RADII, PRE_NOTIFY_OPTIONS, freshClocks, occurrenceKeyFor, type Geofence, type PersistenceLevel, type Reminder, type RepeatRule } from "@/domain/types";
 import { formatDue } from "@/i18n";
+import { isExpoGo } from "@/runtime/expoGo";
 import { getOkoremaNative } from "okorema-native";
 import { currentCoordinates, searchPlaces, type PlaceHit } from "@/services/places";
 import { createId, useApp } from "@/state/store";
@@ -310,18 +311,25 @@ function ReminderForm({ existing, initialListId }: { existing?: Reminder; initia
             </Pressable>
           ))}
           {geofence ? <Button label={app.messages.clearDue} tone="quiet" onPress={() => setGeofence(null)} /> : null}
+          {isExpoGo() ? <Text style={{ color: colors.inkSoft }}>{app.messages.expoGoGeofence}</Text> : null}
         </View>
       ) : (
         <Text style={{ color: colors.inkSoft }}>{app.messages.geofenceLocked}</Text>
       )}
       {error ? <Text style={{ color: colors.danger }}>{error}</Text> : null}
       <Button label={app.messages.save} onPress={() => void onSave()} disabled={app.busy} />
-      {existing && Platform.OS === "android" ? (
+      {existing && (Platform.OS === "android" || isExpoGo()) ? (
         <Button
           label={app.messages.shareToKeep}
           tone="secondary"
           onPress={() => {
-            getOkoremaNative()?.shareToKeep(title, `${title}\n${notes}`);
+            const body = `${title}\n${notes}`;
+            const native = getOkoremaNative();
+            if (native) {
+              native.shareToKeep(title, body);
+              return;
+            }
+            void Share.share({ title, message: body });
           }}
         />
       ) : null}

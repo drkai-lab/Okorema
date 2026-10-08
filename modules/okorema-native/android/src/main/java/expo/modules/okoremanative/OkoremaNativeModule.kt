@@ -17,7 +17,7 @@ class OkoremaNativeModule : Module() {
     }
 
     Function("openExactAlarmSettings") {
-      val context = appContext.reactContext ?: return@Function
+      val context = appContext.reactContext ?: return@Function Unit
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
           data = Uri.parse("package:${context.packageName}")
@@ -33,7 +33,7 @@ class OkoremaNativeModule : Module() {
     }
 
     Function("openFullScreenIntentSettings") {
-      val context = appContext.reactContext ?: return@Function
+      val context = appContext.reactContext ?: return@Function Unit
       if (Build.VERSION.SDK_INT >= 34) {
         val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
           data = Uri.parse("package:${context.packageName}")
@@ -44,22 +44,22 @@ class OkoremaNativeModule : Module() {
     }
 
     Function("syncAlarms") { json: String ->
-      val context = appContext.reactContext ?: return@Function
+      val context = appContext.reactContext ?: return@Function Unit
       AlarmCenter.replaceAlarms(context, json)
     }
 
     Function("showCountdown") { title: String, fireAtMs: Double ->
-      val context = appContext.reactContext ?: return@Function
+      val context = appContext.reactContext ?: return@Function Unit
       AlarmCenter.showCountdown(context, title, fireAtMs.toLong())
     }
 
     Function("hideCountdown") {
-      val context = appContext.reactContext ?: return@Function
+      val context = appContext.reactContext ?: return@Function Unit
       AlarmCenter.hideCountdown(context)
     }
 
     Function("setWidgetSnapshot") { json: String ->
-      val context = appContext.reactContext ?: return@Function
+      val context = appContext.reactContext ?: return@Function Unit
       OkoremaWidgetProvider.publish(context, json)
     }
 

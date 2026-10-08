@@ -9,6 +9,7 @@ import { deviceLocale, messagesFor, type AppLocale } from "@/i18n";
 import type { Messages } from "@/i18n/messages";
 import { exportBackupFile, importBackupFile } from "@/services/backupFile";
 import { purchasePro, restoreProPurchase } from "@/services/entitlement";
+import { EXPO_GO_GOOGLE, EXPO_GO_IAP, isExpoGo } from "@/runtime/expoGo";
 import { getOkoremaNative } from "okorema-native";
 import {
   androidAlarmStatus,
@@ -291,17 +292,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }),
       buyPro: () =>
         run(async (repository) => {
-          const owned = await purchasePro();
-          if (owned) {
-            await repository.setSetting("proStoreUnlocked", "1");
-            setNotice(messages.proUnlocked);
+          try {
+            const owned = await purchasePro();
+            if (owned) {
+              await repository.setSetting("proStoreUnlocked", "1");
+              setNotice(messages.proUnlocked);
+            }
+          } catch (cause) {
+            const code = cause instanceof Error ? cause.message : "";
+            setNotice(code === EXPO_GO_IAP ? messages.expoGoPro : messages.syncFailed);
           }
         }),
       restorePro: () =>
         run(async (repository) => {
-          const owned = await restoreProPurchase();
-          await repository.setSetting("proStoreUnlocked", owned ? "1" : "0");
-          setNotice(owned ? messages.proUnlocked : messages.syncFailed);
+          try {
+            const owned = await restoreProPurchase();
+            await repository.setSetting("proStoreUnlocked", owned ? "1" : "0");
+            setNotice(owned ? messages.proUnlocked : messages.syncFailed);
+          } catch (cause) {
+            const code = cause instanceof Error ? cause.message : "";
+            setNotice(code === EXPO_GO_IAP ? messages.expoGoPro : messages.syncFailed);
+          }
         }),
       signIn: () =>
         run(async (repository) => {
@@ -311,7 +322,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
             setNotice(messages.signedInAs(signed.email));
           } catch (cause) {
             const code = cause instanceof Error ? cause.message : "";
-            setNotice(code === "missing-google-config" ? messages.missingGoogleConfig : messages.syncFailed);
+            if (code === EXPO_GO_GOOGLE) {
+              setNotice(messages.expoGoGoogle);
+            } else if (code === "missing-google-config") {
+              setNotice(messages.missingGoogleConfig);
+            } else if (code !== "cancelled") {
+              setNotice(messages.syncFailed);
+            }
           }
         }),
       signOut: () =>
@@ -360,6 +377,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }),
       importDevice: () =>
         run(async (repository) => {
+          if (isExpoGo()) {
+            setNotice(messages.expoGoImport);
+            return;
+          }
           const native = getOkoremaNative();
           if (!native) {
             setNotice(messages.importDeviceAndroid);

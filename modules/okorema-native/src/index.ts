@@ -1,4 +1,5 @@
 import { requireNativeModule } from "expo";
+import Constants, { ExecutionEnvironment } from "expo-constants";
 
 export type DeviceReminderItem = {
   title: string;
@@ -35,6 +36,9 @@ type OkoremaNativeModule = {
 };
 
 export function getOkoremaNative(): OkoremaNativeModule | null {
+  if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient || Constants.appOwnership === "expo") {
+    return null;
+  }
   try {
     return requireNativeModule<OkoremaNativeModule>("OkoremaNative");
   } catch {

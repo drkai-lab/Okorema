@@ -8,6 +8,7 @@ import { buildWidgetSnapshot } from "@/domain/snapshot";
 import type { CompletionLog, EscalationState, Reminder } from "@/domain/types";
 import { upcomingReminders, effectiveDueIso } from "@/domain/overdue";
 import { messagesFor, formatDue } from "@/i18n";
+import { isExpoGo } from "@/runtime/expoGo";
 import { getOkoremaNative } from "okorema-native";
 
 import type { Repository } from "@/db/repository";
@@ -75,8 +76,8 @@ async function publishNotifications(
   locale: AppLocale,
 ): Promise<void> {
   const messages = messagesFor(locale);
-  if (Platform.OS === "android") {
-    const native = getOkoremaNative();
+  const native = Platform.OS === "android" ? getOkoremaNative() : null;
+  if (Platform.OS === "android" && native) {
     const alarms = notifications.map((notification) => {
       const copy =
         notification.kind === "prenotify"
@@ -94,11 +95,11 @@ async function publishNotifications(
         snoozeLabel: messages.snooze10,
       };
     });
-    native?.syncAlarms(JSON.stringify(alarms));
+    native.syncAlarms(JSON.stringify(alarms));
     return;
   }
 
-  if (Platform.OS !== "ios") {
+  if (Platform.OS !== "ios" && Platform.OS !== "android") {
     return;
   }
 
@@ -123,7 +124,7 @@ async function publishNotifications(
         title: copy.title,
         body: copy.body,
         categoryIdentifier: "okorema-actions",
-        interruptionLevel: "timeSensitive",
+        ...(isExpoGo() ? {} : { interruptionLevel: "timeSensitive" as const }),
         sound: "default",
         data: {
           reminderId: notification.reminderId,
@@ -165,7 +166,7 @@ async function publishSurfaces(reminders: Reminder[], logs: CompletionLog[], loc
       native?.hideCountdown();
     }
   }
-  if (Platform.OS === "ios") {
+  if (Platform.OS === "ios" && !isExpoGo()) {
     const surfaces = await import("@/services/surfaces.ios");
     await surfaces.pushIosSurfaces({
       snapshot,

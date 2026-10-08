@@ -9,6 +9,7 @@ import { formatDue } from "@/i18n";
 import { createId } from "@/db/repository";
 import { useApp } from "@/state/store";
 import { colors, space } from "@/ui/theme";
+import { isExpoGo } from "@/runtime/expoGo";
 import { Banner, Button, Card, EmptyState, H1, Lead, Screen, SectionTitle } from "@/ui/ui";
 
 export default function HomeScreen() {
@@ -28,6 +29,7 @@ export default function HomeScreen() {
     <Screen>
       <H1>{app.messages.appName}</H1>
       <Lead>{app.messages.tagline}</Lead>
+      {isExpoGo() ? <Banner>{app.messages.expoGoLimits}</Banner> : null}
       <Text style={{ color: colors.inkSoft }}>{app.messages.weekCompleted(week)}</Text>
       {overdue.length > 0 ? <Banner>{app.messages.overdueCount(overdue.length)}</Banner> : null}
       {app.budget?.truncated ? <Banner>{app.messages.budgetWarning(app.budget.scheduledCount, app.budget.desiredCount)}</Banner> : null}

@@ -1,8 +1,9 @@
-import * as BackgroundTask from "expo-background-task";
 import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
 import * as TaskManager from "expo-task-manager";
 import { Platform } from "react-native";
+
+import { isExpoGo } from "@/runtime/expoGo";
 
 import { occurrenceKeyFor } from "@/domain/types";
 import { deviceLocale } from "@/i18n";
@@ -64,6 +65,7 @@ if (!TaskManager.isTaskDefined(GEOFENCE_TASK)) {
 
 if (!TaskManager.isTaskDefined(SYNC_TASK)) {
   TaskManager.defineTask(SYNC_TASK, async () => {
+    const BackgroundTask = await import("expo-background-task");
     try {
       const repo = await openAppRepository();
       const result = await syncGoogle(repo);
@@ -140,7 +142,7 @@ export async function consumeNativeActions(): Promise<void> {
 }
 
 export async function ensureBackgroundSync(): Promise<void> {
-  if (Platform.OS === "web") {
+  if (Platform.OS === "web" || isExpoGo()) {
     return;
   }
   try {
@@ -148,6 +150,7 @@ export async function ensureBackgroundSync(): Promise<void> {
     if (!defined) {
       return;
     }
+    const BackgroundTask = await import("expo-background-task");
     await BackgroundTask.registerTaskAsync(SYNC_TASK, { minimumInterval: 15 });
   } catch {
     // Background task registration is unavailable on simulators and web.
@@ -155,7 +158,7 @@ export async function ensureBackgroundSync(): Promise<void> {
 }
 
 export function listenForIosWidgetCompletions(): () => void {
-  if (Platform.OS !== "ios") {
+  if (Platform.OS !== "ios" || isExpoGo()) {
     return () => undefined;
   }
   let remove: () => void = () => undefined;

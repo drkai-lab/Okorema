@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Switch, Text, View } from "react-native";
 
+import { isExpoGo } from "@/runtime/expoGo";
 import { GOOGLE_SCOPES, addGoogleScope, listGoogleCalendars } from "@/services/sync";
 import { useApp } from "@/state/store";
 import { colors } from "@/ui/theme";
@@ -50,7 +51,8 @@ export default function SyncScreen() {
   return (
     <Screen>
       <Lead>{app.messages.syncLead}</Lead>
-      {!app.account ? <Button label={app.messages.signIn} onPress={() => void app.signIn()} disabled={app.busy} /> : null}
+      {isExpoGo() ? <Banner>{app.messages.expoGoGoogle}</Banner> : null}
+      {!app.account && !isExpoGo() ? <Button label={app.messages.signIn} onPress={() => void app.signIn()} disabled={app.busy} /> : null}
       {app.account ? (
         <Card>
           <Text style={{ fontWeight: "700", color: colors.ink }}>{app.messages.signedInAs(app.account.email)}</Text>

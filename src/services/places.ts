@@ -1,6 +1,7 @@
 import * as Location from "expo-location";
 
 import { haversineMeters, sortPlacesByDistance, type LatLng } from "@/domain/geo";
+import { isExpoGo } from "@/runtime/expoGo";
 
 export type PlaceHit = LatLng & {
   id: string;
@@ -45,6 +46,9 @@ export async function searchPlaces(query: string, origin: LatLng): Promise<Place
 }
 
 export async function syncGeofences(reminders: { id: string; geofence: { latitude: number; longitude: number; radiusMeters: number; trigger: "arrive" | "leave" } | null; deletedAt: string | null; completedAt: string | null }[]): Promise<void> {
+  if (isExpoGo()) {
+    return;
+  }
   const regions = reminders
     .filter((reminder) => reminder.geofence && !reminder.deletedAt && !reminder.completedAt)
     .map((reminder) => ({
