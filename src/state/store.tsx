@@ -10,7 +10,6 @@ import type { Messages } from "@/i18n/messages";
 import { exportBackupFile, importBackupFile } from "@/services/backupFile";
 import { purchasePro, restoreProPurchase } from "@/services/entitlement";
 import { EXPO_GO_GOOGLE, EXPO_GO_IAP, isExpoGo } from "@/runtime/expoGo";
-import { getOkoremaNative } from "okorema-native";
 import {
   androidAlarmStatus,
   notificationPermissionGranted,
@@ -35,7 +34,6 @@ import {
   commitSnoozeAll,
   commitUndo,
   enqueue,
-  importDeviceItems,
   isProFrom,
   loadAll,
   onDataChanged,
@@ -376,23 +374,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setNotice(messages.importAdded(result.lists, result.reminders));
         }),
       importDevice: () =>
-        run(async (repository) => {
-          if (isExpoGo()) {
-            setNotice(messages.expoGoImport);
-            return;
-          }
-          const native = getOkoremaNative();
-          if (!native) {
-            setNotice(messages.importDeviceAndroid);
-            return;
-          }
-          const result = await native.importDeviceReminders();
-          if (!result.granted) {
-            setNotice(messages.importDenied);
-            return;
-          }
-          const count = await importDeviceItems(repository, result.items);
-          setNotice(messages.importResult(count));
+        run(async () => {
+          setNotice(isExpoGo() ? messages.expoGoImport : messages.importDeviceAndroid);
         }),
       seed: () => run((repository) => seedDemo(repository)),
       allowNotifications: async () => {

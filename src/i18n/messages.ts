@@ -138,6 +138,10 @@ export type Messages = {
   proDev: string;
   devUnlock: string;
   devLock: string;
+  versionLabel: (version: string) => string;
+  ownerProTitle: string;
+  ownerProBody: string;
+  ownerProLock: string;
   seedDemo: string;
   about: string;
   aboutBody: string;
@@ -322,13 +326,17 @@ export const ja: Messages = {
   shareToKeep: "Keepに共有",
   pro: "Pro",
   proLead: "買い切りです。サブスクリプションではありません。鬼モードと場所リマインダーが開きます。",
-  proPriceNote: "ストアの価格はApp Store / Google Playの表示が正です。開発中は下のスイッチで試せます。",
+  proPriceNote: "ストアの価格はApp Store / Google Playの表示が正です。購入と復元はその権利だけを変えます。確認用の解放は、設定のバージョン表示を7回タップします。",
   purchase: "Proを購入",
   restore: "購入を復元",
   proUnlocked: "Proは有効です",
   proDev: "開発用にProを解放",
   devUnlock: "開発用Proをオンにしました",
   devLock: "開発用Proをオフにしました",
+  versionLabel: (version) => `バージョン ${version}`,
+  ownerProTitle: "確認用のPro",
+  ownerProBody: "この端末だけに保存します。App Store や Google Play の購入とは別です。オンのあいだは、ここから閉じられます。",
+  ownerProLock: "開発用Proを閉じる",
   seedDemo: "サンプルデータを入れる",
   about: "Okorema! について",
   aboutBody: "ローカル優先のリマインダーです。完了するまで通知が続きます。広告もアカウントもありません。",
@@ -372,10 +380,10 @@ export const ja: Messages = {
   notifMissing: "通知はまだ許可されていません",
   devSection: "開発者向け",
   expoGoLimits:
-    "Expo Go では、リスト、リマインダー、繰り返し、ローカル通知（完了と10分スヌーズ）、期限超過の全画面、バックアップが使えます。Live Activity、ホームウィジェット、ストア課金、iPhoneリマインダーの読み込み、場所の監視、このアプリ専用のネイティブ機能は開発ビルドが必要です。Proの確認は「開発用にProを解放」を使ってください。",
+    "Expo Go では、リスト、リマインダー、繰り返し、ローカル通知（完了と10分スヌーズ）、期限超過の全画面、バックアップが使えます。Live Activity、ホームウィジェット、ストア課金、iPhoneリマインダーの読み込み、場所の監視、このアプリ専用のネイティブ機能は開発ビルドが必要です。Proの確認は「Okorema! について」のバージョン表示を7回タップし、「開発用にProを解放」を押してください。",
   expoGoGoogle:
     "Expo Go では Google サインインを使えません。Google は Expo Go の exp:// リダイレクトを受け付けず、ネイティブの Google Sign-In も Expo Go には入りません。カレンダー同期は開発ビルドで試してください。",
-  expoGoPro: "Expo Go にはストア課金が入っていません。鬼モードと場所の確認は「開発用にProを解放」を使ってください。",
+  expoGoPro: "Expo Go にはストア課金が入っていません。鬼モードの確認は、設定のバージョン表示を7回タップして「開発用にProを解放」を押してください。場所は保存できますが、到着と離脱の通知は出ません。",
   expoGoImport: "Expo Go では iPhone のリマインダー（EventKit）を読み込めません。開発ビルドが必要です。",
   expoGoWidgets: "Expo Go では Live Activity とホームウィジェットは動きません。通知そのものは届きます。Time Sensitive の割り込みは Expo Go 側の権限に依存し、通常の通知になることがあります。",
   expoGoGeofence: "Expo Go では到着と離脱の監視は動きません。場所の内容は保存されますが、通知は出ません。",
@@ -515,13 +523,17 @@ export const en: Messages = {
   shareToKeep: "Share to Keep",
   pro: "Pro",
   proLead: "One-time purchase. Not a subscription. Unlocks Oni mode and place reminders.",
-  proPriceNote: "The store price shown by App Store or Google Play is the price. The switch below is for development builds.",
+  proPriceNote: "The store price shown by App Store or Google Play is the price. Buy and Restore change only the store entitlement. To try Pro on this device, tap the version in Settings seven times.",
   purchase: "Buy Pro",
   restore: "Restore purchase",
   proUnlocked: "Pro is unlocked",
   proDev: "Unlock Pro for development",
   devUnlock: "Development Pro is on",
   devLock: "Development Pro is off",
+  versionLabel: (version) => `Version ${version}`,
+  ownerProTitle: "Pro for this device",
+  ownerProBody: "Saved only on this device. Separate from an App Store or Google Play purchase. While it is on, you can turn it off here.",
+  ownerProLock: "Turn off development Pro",
   seedDemo: "Load sample data",
   about: "About Okorema!",
   aboutBody: "A local-first reminder that keeps notifying until you are done. No ads and no account.",
@@ -565,10 +577,10 @@ export const en: Messages = {
   notifMissing: "Notifications are not allowed yet",
   devSection: "Developer",
   expoGoLimits:
-    "In Expo Go you can use lists, reminders, repeats, local notifications (Done and Snooze 10 min), the overdue full-screen gate, and backup. Live Activity, home widgets, store purchases, iPhone Reminders import, place monitoring, and this app's own native module need a development build. Use Unlock Pro for development to try Pro.",
+    "In Expo Go you can use lists, reminders, repeats, local notifications (Done and Snooze 10 min), the overdue full-screen gate, and backup. Live Activity, home widgets, store purchases, iPhone Reminders import, place monitoring, and this app's own native module need a development build. To try Pro, tap the version under About Okorema! seven times, then tap Unlock Pro for development.",
   expoGoGoogle:
     "Google sign-in is unavailable in Expo Go. Google does not accept Expo Go's exp:// redirect, and the native Google Sign-In module is not in Expo Go. Use a development build to sync calendars.",
-  expoGoPro: "Store purchases are not in Expo Go. Use Unlock Pro for development to try Oni mode and places.",
+  expoGoPro: "Store purchases are not in Expo Go. To try Oni mode, tap the version in Settings seven times, then tap Unlock Pro for development. Places can be saved, but arrive and leave alerts do not fire.",
   expoGoImport: "Expo Go cannot read iPhone Reminders (EventKit). That needs a development build.",
   expoGoWidgets:
     "Live Activity and home widgets do not run in Expo Go. Local notifications still arrive. Time Sensitive delivery depends on Expo Go and may fall back to a normal alert.",

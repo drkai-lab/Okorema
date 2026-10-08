@@ -1,7 +1,7 @@
 import * as SecureStore from "expo-secure-store";
 import Constants from "expo-constants";
 
-import { EXPO_GO_GOOGLE, isExpoGo } from "@/runtime/expoGo";
+import { EXPO_GO_GOOGLE } from "@/runtime/expoGo";
 
 import { runSync } from "@/domain/sync/engine";
 import type { Repository } from "@/db/repository";
@@ -35,108 +35,24 @@ export function googleConfig(): { webClientId: string; iosClientId: string; conf
   return { webClientId, iosClientId, configured: Boolean(webClientId) };
 }
 
-type GoogleSigninApi = {
-  configure: (options: { webClientId: string; iosClientId?: string; scopes: string[]; offlineAccess: boolean }) => void;
-  hasPlayServices: (options: { showPlayServicesUpdateDialog: boolean }) => Promise<boolean>;
-  signIn: () => Promise<
-    | { type: "success"; data: { idToken: string | null; user: { email: string; name: string | null } } }
-    | { type: string }
-  >;
-  signOut: () => Promise<void>;
-  addScopes: (options: { scopes: string[] }) => Promise<unknown>;
-  getTokens: () => Promise<{ accessToken: string }>;
-};
-
-function googleSignin(): GoogleSigninApi {
-  if (isExpoGo()) {
-    throw new Error(EXPO_GO_GOOGLE);
-  }
-  // The package calls TurboModuleRegistry.getEnforcing at import time, which crashes Expo Go.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const loaded = require("@react-native-google-signin/google-signin") as { GoogleSignin: GoogleSigninApi };
-  return loaded.GoogleSignin;
-}
-
 export function configureGoogle(): void {
-  if (isExpoGo()) {
-    return;
-  }
-  const config = googleConfig();
-  if (!config.configured) {
-    return;
-  }
-  googleSignin().configure({
-    webClientId: config.webClientId,
-    iosClientId: config.iosClientId || undefined,
-    scopes: ["email", "profile"],
-    offlineAccess: true,
-  });
-}
-
-function decodePayload(idToken: string | null): { hd?: string; email?: string } {
-  if (!idToken) return {};
-  const part = idToken.split(".")[1];
-  if (!part) return {};
-  try {
-    const padded = part.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(part.length / 4) * 4, "=");
-    return JSON.parse(globalThis.atob(padded)) as { hd?: string; email?: string };
-  } catch {
-    return {};
-  }
+  return;
 }
 
 export async function signInWithGoogle(): Promise<GoogleAccount> {
-  if (isExpoGo()) {
-    throw new Error(EXPO_GO_GOOGLE);
-  }
-  if (!googleConfig().configured) {
-    throw new Error("missing-google-config");
-  }
-  const google = googleSignin();
-  configureGoogle();
-  await google.hasPlayServices({ showPlayServicesUpdateDialog: true });
-  const response = await google.signIn();
-  if (response.type !== "success" || !("data" in response)) {
-    throw new Error("cancelled");
-  }
-  const tokens = await google.getTokens();
-  await SecureStore.setItemAsync(TOKEN_KEY, tokens.accessToken);
-  const payload = decodePayload(response.data.idToken);
-  return {
-    email: response.data.user.email,
-    name: response.data.user.name ?? response.data.user.email,
-    hostedDomain: payload.hd ?? null,
-  };
+  throw new Error(EXPO_GO_GOOGLE);
 }
 
 export async function signOutGoogle(): Promise<void> {
-  if (!isExpoGo()) {
-    configureGoogle();
-    await googleSignin().signOut();
-  }
   await SecureStore.deleteItemAsync(TOKEN_KEY);
 }
 
-export async function addGoogleScope(scope: string): Promise<void> {
-  if (isExpoGo()) {
-    throw new Error(EXPO_GO_GOOGLE);
-  }
-  const google = googleSignin();
-  configureGoogle();
-  await google.addScopes({ scopes: [scope] });
-  const tokens = await google.getTokens();
-  await SecureStore.setItemAsync(TOKEN_KEY, tokens.accessToken);
+export async function addGoogleScope(_scope: string): Promise<void> {
+  throw new Error(EXPO_GO_GOOGLE);
 }
 
 async function accessToken(): Promise<string> {
-  if (isExpoGo()) {
-    throw new Error(EXPO_GO_GOOGLE);
-  }
-  const google = googleSignin();
-  configureGoogle();
-  const tokens = await google.getTokens();
-  await SecureStore.setItemAsync(TOKEN_KEY, tokens.accessToken);
-  return tokens.accessToken;
+  throw new Error(EXPO_GO_GOOGLE);
 }
 
 export async function syncGoogle(repo: Repository): Promise<{ warnings: string[]; error: string | null }> {

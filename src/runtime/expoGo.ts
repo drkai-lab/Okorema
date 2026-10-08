@@ -4,9 +4,15 @@ export const EXPO_GO_GOOGLE = "expo-go-google";
 export const EXPO_GO_IAP = "expo-go-iap";
 
 /**
- * Expo Go (the store client) cannot load this app's config plugins or local native module.
- * A development build reports `bare` here, so the same checks leave native features on.
+ * This branch is the App Store Expo Go build (SDK 54). Native modules are not dependencies.
+ * The flag stays true even if Constants has not reported the store client yet.
  */
+export const SDK54_EXPO_GO_BUILD = true;
+
 export function isExpoGo(): boolean {
-  return Constants.executionEnvironment === ExecutionEnvironment.StoreClient || Constants.appOwnership === "expo";
+  return (
+    SDK54_EXPO_GO_BUILD ||
+    Constants.executionEnvironment === ExecutionEnvironment.StoreClient ||
+    Constants.appOwnership === "expo"
+  );
 }

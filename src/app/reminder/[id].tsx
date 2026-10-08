@@ -6,7 +6,6 @@ import { Modal, Platform, Pressable, Share, Text, TextInput, View } from "react-
 import { GEOFENCE_RADII, PRE_NOTIFY_OPTIONS, freshClocks, occurrenceKeyFor, type Geofence, type PersistenceLevel, type Reminder, type RepeatRule } from "@/domain/types";
 import { formatDue } from "@/i18n";
 import { isExpoGo } from "@/runtime/expoGo";
-import { getOkoremaNative } from "okorema-native";
 import { currentCoordinates, searchPlaces, type PlaceHit } from "@/services/places";
 import { createId, useApp } from "@/state/store";
 import { colors, space } from "@/ui/theme";
@@ -323,13 +322,7 @@ function ReminderForm({ existing, initialListId }: { existing?: Reminder; initia
           label={app.messages.shareToKeep}
           tone="secondary"
           onPress={() => {
-            const body = `${title}\n${notes}`;
-            const native = getOkoremaNative();
-            if (native) {
-              native.shareToKeep(title, body);
-              return;
-            }
-            void Share.share({ title, message: body });
+            void Share.share({ title, message: `${title}\n${notes}` });
           }}
         />
       ) : null}

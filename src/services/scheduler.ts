@@ -4,12 +4,8 @@ import * as Notifications from "expo-notifications";
 import { escalationCopy, preNotifyCopy, type AppLocale } from "@/domain/copy";
 import { effectivePersistence, IOS_PENDING_NOTIFICATION_LIMIT } from "@/domain/escalation";
 import { markDelivered, planNotifications, type BudgetReport, type ScheduleReminder } from "@/domain/schedule";
-import { buildWidgetSnapshot } from "@/domain/snapshot";
-import type { CompletionLog, EscalationState, Reminder } from "@/domain/types";
-import { upcomingReminders, effectiveDueIso } from "@/domain/overdue";
-import { messagesFor, formatDue } from "@/i18n";
-import { isExpoGo } from "@/runtime/expoGo";
-import { getOkoremaNative } from "okorema-native";
+import type { EscalationState } from "@/domain/types";
+import { messagesFor } from "@/i18n";
 
 import type { Repository } from "@/db/repository";
 
@@ -49,7 +45,7 @@ export async function prepareNotificationCategories(locale: AppLocale): Promise<
 }
 
 export async function refreshSchedules(repo: Repository, locale: AppLocale, isPro: boolean): Promise<BudgetReport> {
-  const [reminders, states, logs] = await Promise.all([repo.reminders(), repo.escalation(), repo.logs()]);
+  const [reminders, states] = await Promise.all([repo.reminders(), repo.escalation()]);
   const now = new Date();
   const visible = reminders.filter((reminder) => !reminder.deletedAt);
   const scheduleInputs: ScheduleReminder[] = visible.map((reminder) => ({
@@ -67,7 +63,6 @@ export async function refreshSchedules(repo: Repository, locale: AppLocale, isPr
   const plan = planNotifications(scheduleInputs, states, now, limit);
   await repo.saveEscalation(plan.states);
   await publishNotifications(plan.notifications, locale);
-  await publishSurfaces(visible, logs, locale, now);
   return plan.report;
 }
 
@@ -75,30 +70,6 @@ async function publishNotifications(
   notifications: { reminderId: string; identifier: string; kind: "escalation" | "prenotify"; index: number; fireAt: string; occurrenceKey: string; persistence: "gentle" | "normal" | "oni"; title: string; preNotifyMinutes: number | null }[],
   locale: AppLocale,
 ): Promise<void> {
-  const messages = messagesFor(locale);
-  const native = Platform.OS === "android" ? getOkoremaNative() : null;
-  if (Platform.OS === "android" && native) {
-    const alarms = notifications.map((notification) => {
-      const copy =
-        notification.kind === "prenotify"
-          ? preNotifyCopy(notification.title, notification.preNotifyMinutes ?? 5, locale)
-          : escalationCopy(notification.persistence, notification.index, notification.title, locale);
-      return {
-        id: notification.identifier,
-        reminderId: notification.reminderId,
-        occurrenceKey: notification.occurrenceKey,
-        title: copy.title,
-        body: copy.body,
-        fireAt: new Date(notification.fireAt).getTime(),
-        fullScreen: notification.kind === "escalation",
-        completeLabel: messages.done,
-        snoozeLabel: messages.snooze10,
-      };
-    });
-    native.syncAlarms(JSON.stringify(alarms));
-    return;
-  }
-
   if (Platform.OS !== "ios" && Platform.OS !== "android") {
     return;
   }
@@ -124,7 +95,6 @@ async function publishNotifications(
         title: copy.title,
         body: copy.body,
         categoryIdentifier: "okorema-actions",
-        ...(isExpoGo() ? {} : { interruptionLevel: "timeSensitive" as const }),
         sound: "default",
         data: {
           reminderId: notification.reminderId,
@@ -138,41 +108,6 @@ async function publishNotifications(
         date: fireAt,
         channelId: "okorema-alarm",
       },
-    });
-  }
-}
-
-async function publishSurfaces(reminders: Reminder[], logs: CompletionLog[], locale: AppLocale, now: Date): Promise<void> {
-  const messages = messagesFor(locale);
-  const snapshot = buildWidgetSnapshot(
-    reminders,
-    logs,
-    now,
-    {
-      noUpcoming: messages.noUpcoming,
-      overdue: messages.overdueCount,
-      week: messages.weekCompleted,
-    },
-    (iso) => formatDue(iso, locale, now),
-  );
-  const native = getOkoremaNative();
-  native?.setWidgetSnapshot(JSON.stringify(snapshot));
-  const next = upcomingReminders(reminders, now, 1)[0];
-  const due = next ? effectiveDueIso(next) : null;
-  if (Platform.OS === "android") {
-    if (next && due && new Date(due).getTime() > now.getTime()) {
-      native?.showCountdown(next.title, new Date(due).getTime());
-    } else {
-      native?.hideCountdown();
-    }
-  }
-  if (Platform.OS === "ios" && !isExpoGo()) {
-    const surfaces = await import("@/services/surfaces.ios");
-    await surfaces.pushIosSurfaces({
-      snapshot,
-      title: next?.title ?? messages.noUpcoming,
-      dueLabel: due ? formatDue(due, locale, now) : messages.noUpcoming,
-      dueAt: due,
     });
   }
 }
@@ -195,17 +130,7 @@ export async function noteDelivered(repo: Repository, reminderId: string, index:
 }
 
 export async function readNativeActions(): Promise<NativeAction[]> {
-  const native = getOkoremaNative();
-  if (!native) {
-    return [];
-  }
-  try {
-    const raw = native.consumePendingActions();
-    const parsed = JSON.parse(raw) as NativeAction[];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+  return [];
 }
 
 export async function notificationPermissionGranted(): Promise<boolean> {
@@ -221,22 +146,15 @@ export async function requestNotificationPermission(): Promise<boolean> {
 }
 
 export function androidAlarmStatus(): { exact: boolean; fullScreen: boolean } {
-  const native = getOkoremaNative();
-  if (!native || Platform.OS !== "android") {
-    return { exact: true, fullScreen: true };
-  }
-  return {
-    exact: native.canScheduleExactAlarms(),
-    fullScreen: native.canUseFullScreenIntent(),
-  };
+  return { exact: true, fullScreen: true };
 }
 
 export function openExactAlarmSettings(): void {
-  getOkoremaNative()?.openExactAlarmSettings();
+  return;
 }
 
 export function openFullScreenSettings(): void {
-  getOkoremaNative()?.openFullScreenIntentSettings();
+  return;
 }
 
 export type { EscalationState };

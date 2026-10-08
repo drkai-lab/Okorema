@@ -17,7 +17,6 @@ export default function ProScreen() {
       {app.isPro ? <Card><Text style={{ color: colors.ok, fontWeight: "700" }}>{app.messages.proUnlocked}</Text></Card> : null}
       <Button label={app.messages.purchase} onPress={() => void app.buyPro()} disabled={app.busy || expoGo} />
       <Button label={app.messages.restore} tone="secondary" onPress={() => void app.restorePro()} disabled={app.busy || expoGo} />
-      {__DEV__ || expoGo ? <Button label={app.messages.proDev} tone="quiet" onPress={() => void app.toggleDevPro()} /> : null}
       <Text style={{ color: colors.inkSoft }}>{app.messages.oniHint}</Text>
       <Text style={{ color: colors.inkSoft }}>{app.messages.geofenceLocked}</Text>
       {app.notice ? <Text style={{ color: colors.ink }}>{app.notice}</Text> : null}

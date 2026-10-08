@@ -1,6 +1,22 @@
-# Okorema!
+# Okorema!（このブランチは App Store の Expo Go 用、SDK 54）
 
-完了するまで通知をやめない、ローカル優先のリマインダーです。iOS 17 以降と Android 14 以降を対象に、Expo（SDK 57）の開発ビルドで動きます。広告はありません。Google にサインインしなくても、リマインダーの作成から通知まで一通り使えます。端末上の保存は SQLite です。ブラウザでの確認用起動だけは、Metro が `wa-sqlite.wasm` を読み込めないため、同じ操作をインメモリで行います。iOS と Android の開発ビルドは SQLite のままです。
+このブランチ `cursor/expo-go-sdk54-ab6a` は、iPhone の App Store 版 Expo Go（SDK 54 のみ）で開くための JavaScript です。`main` は SDK 57 の開発ビルドと Android リリース APK のままです。こちらには `okorema-native`、Live Activity、ウィジェット、`expo-iap`、Google サインイン、バックグラウンドタスクを依存関係として入れていません。起動時にそれらのモジュールを読み込みません。
+
+動くもの: リスト、リマインダー、繰り返し、完了と 10 分スヌーズ付きのローカル通知、期限超過の全画面、バックアップ、確認用の Pro（設定のバージョンを 7 回タップ）、日本語（端末が英語なら英語）。
+
+動かないもの: 正確なアラーム用の自前ネイティブモジュール、Live Activity、ホームウィジェット、ストア課金、Google サインイン、EventKit 取り込み、場所の到着と離脱、Time Sensitive、定期バックグラウンド同期。
+
+```bash
+git clone <このリポジトリの URL>
+cd <リポジトリ>
+git checkout cursor/expo-go-sdk54-ab6a
+npm install
+npx expo start --go --tunnel
+```
+
+App Store の Expo Go で QR を読みます。同じ Wi-Fi なら `--tunnel` は要りません。`npx expo start --go` です。
+
+完了するまで通知をやめない、ローカル優先のリマインダーです。広告はありません。Google にサインインしなくても、リマインダーの作成から通知まで一通り使えます。端末上の保存は SQLite です。ブラウザでの確認用起動だけは、Metro が `wa-sqlite.wasm` を読み込めないため、同じ操作をインメモリで行います。
 
 表示言語は端末の言語に従います。英語なら英語、それ以外は日本語です。
 
@@ -10,14 +26,12 @@
 - iOS をビルドする場合は macOS と Xcode（このリポジトリの検証環境は Linux のため、iOS のコンパイルは未実施です）
 - Android をビルドする場合は Android SDK（compileSdk 36、minSdk 34）
 
+App Store の Expo Go で試すときは prebuild も開発ビルドも要りません。上の `npx expo start --go --tunnel` だけで足ります。ネイティブの開発ビルドは `main` ブランチです。
+
 ```bash
 npm install
-cp .env.example .env
 npm run typecheck
 npm test
-npm run lint
-npx expo prebuild
-npx expo start --dev-client
 ```
 
 `ios/` と `android/` は prebuild の生成物で、git には含めません。クライアント ID を変えたあとは、もう一度 prebuild して開発ビルドを作り直してください。
@@ -33,50 +47,29 @@ iOS のデプロイメントターゲットは 17.0、Android の minSdk は 34 
 
 ## iPhone の Expo Go で試す
 
-このアプリの Expo SDK は **57**（`expo` の `latest`）です。公式の案内では、**Apple App Store の Expo Go は SDK 54 で止まっていて、SDK 55 以降は配信されていません**。
+このブランチの Expo SDK は **54.0.37** です。Apple App Store の Expo Go が読み込めるのは SDK 54 までです（https://docs.expo.dev/troubleshooting/expo-go-version-mismatch/）。`main` の SDK 57 はこの Expo Go では開けません。
 
-- 不一致の説明: https://docs.expo.dev/troubleshooting/expo-go-version-mismatch/
-- SDK 57 のリリースノートでも、App Store 承認待ちのあいだ iOS 実機の Expo Go は `eas go` だと書かれています: https://expo.dev/changelog/sdk-57
-
-そのため、App Store から入れた Expo Go でこのプロジェクトの QR を読むと、「Project is incompatible with this version of Expo Go」になります。SDK 54 へプロジェクト全体を下げると、Android の正確なアラーム、全画面インテント、Live Activity、ウィジェットの現行実装と揃わなくなるので、SDK は 57 のままです。iPhone で開くには、SDK 57 の Expo Go を自分の Apple Developer アカウントで配ります。
-
-### 自分の PC で開発サーバーを立てる
-
-Node.js 20 以上が要ります。リポジトリを取得したディレクトリで:
+iPhone に App Store の Expo Go を入れ、このブランチで次を実行し、出た QR をカメラか Expo Go で読みます。
 
 ```bash
 npm install
 npx expo start --go --tunnel
 ```
 
-`expo-dev-client` が入っているので、フラグなしの `npx expo start` は開発ビルド用の QR になります。Expo Go で開くときは必ず `--go` を付けるか、起動後に `s` を押して Expo Go に切り替えてください。別の Wi-Fi にいる iPhone からは `--tunnel` が必要です。同じ LAN なら `npx expo start --go` でも届きます。
+`--go` は Expo Go 用の QR です。別のネットワークにいる iPhone には `--tunnel` が要ります。同じ LAN なら `npx expo start --go` で足ります。トンネルは Expo のアカウントログインを求めることがあります。
 
-1. iPhone に **SDK 57 の Expo Go** を入れます。App Store 版では足りません。Expo アカウントで `npx expo login` したあと、Apple Developer Program のメンバーシップがある Mac か、EAS が使える環境で次を実行し、TestFlight からインストールします。
+### このブランチで動かないもの
 
-   ```bash
-   npx eas-cli go --sdk-version 57.0.0
-   ```
+依存関係から外してあり、import もしません。
 
-   手順の補足: https://docs.expo.dev/troubleshooting/expo-go-version-mismatch/ と https://github.com/expo/fyi/blob/main/personal-expo-go.md
-2. PC のターミナルに出た QR を、iPhone のカメラか Expo Go のスキャンで読みます。
-3. 初回は Expo の開発サーバーへの接続を許可します。最新の Expo Go は、CLI とアプリの両方で同じ Expo アカウントにログインしていることを求めることがあります。
-
-Android の Expo Go は https://expo.dev/go から SDK 57 を選べます。Play ストア版が遅れているときは、そちらを使ってください。
-
-### Expo Go で動くもの / 動かないもの
-
-動くもの: リスト、リマインダー、繰り返し、完了とスヌーズ、粘りのあるローカル通知（Expo Go が許す範囲のアクション「完了にする」「10分後にスヌーズ」）、期限超過の全画面、バックアップの書き出しと追加読み込み。Pro は設定の「開発用にProを解放」で切り替えます。
-
-動かないもの（起動時に読み込まず、画面で理由を出します）:
-
-- ローカルモジュール `okorema-native`（Android の正確なアラーム、全画面インテント、常駐カウントダウン、ウィジェット、Keep への専用共有）。Keep への共有は OS の共有シートに落ちます。
-- iOS の Live Activity / Dynamic Island とホームウィジェット（`expo-widgets`）。
-- ストア課金（`expo-iap`）。購入と復元のボタンは無効で、開発用の Pro スイッチを使います。
-- Google サインイン。`@react-native-google-signin/google-signin` は Expo Go に無く、`expo-auth-session` も Google が `exp://` のリダイレクトを拒否するため完了できません。同期画面にその旨を出します。
+- `okorema-native`（正確なアラーム、全画面インテント、常駐カウントダウン、ウィジェット）。Keep への共有は OS の共有シートです。
+- Live Activity とホームウィジェット。
+- ストア課金。Pro の確認は、設定の「Okorema! について」にある「バージョン 1.0.0」を 7 回タップし、「開発用にProを解放」を押します。オンのあいだは同じ場所に「開発用Proを閉じる」が出ます。鬼モードの通知間隔は動きます。場所は保存できますが、到着と離脱の通知は出ません。
+- Google サインイン。同期画面に理由を出します。
 - iPhone リマインダー（EventKit）の読み込み。
-- 場所の到着 / 離脱の監視。場所の文字列は保存できますが、ジオフェンスは登録しません。
-- Time Sensitive は Expo Go 本体の権限次第で、通常の通知になることがあります。
-- バックグラウンドの定期同期は登録しません。
+- 場所の到着と離脱。場所の文字列は保存できますが、ジオフェンスは登録しません。
+- Time Sensitive。通知は通常のローカル通知です。アクションは「完了にする」と「10分後にスヌーズ」です。
+- バックグラウンドの定期同期。
 
 ### 開発サーバーなしで開く（EAS Update）
 
@@ -125,7 +118,13 @@ iOS が同時に保留できるローカル通知は 64 件です。事前通知
 
 ## Pro と場所
 
-商品 ID は非消耗型の `okorema_pro_unlock` です。購入処理は `expo-iap` の背後にあり、画面は権利の有無だけを見ます。開発ビルドでは設定の「開発者向け」から Pro を切り替えられます。
+商品 ID は非消耗型の `okorema_pro_unlock` です。このブランチにストア課金はありません。確認用の Pro は端末の設定 `proDevUnlock` だけを変え、ストアの購入とは別です。
+
+1. 下の「設定」を開く。
+2. 「Okorema! について」の「バージョン 1.0.0」を 7 回タップする。
+3. 「確認用のPro」が出るので、「開発用にProを解放」を押す。
+4. 「開発用Proをオンにしました」と出れば有効です。鬼モードを選べます。
+5. 閉じるときは、設定に残っている「開発用Proを閉じる」を押す。「開発用Proをオフにしました」と出ます。
 
 場所リマインダーは到着または離脱、半径は 100 / 300 / 500 メートルです。場所検索は OpenStreetMap の Nominatim で、現在地からの距離順です。Google Places のキーは要りません。
 

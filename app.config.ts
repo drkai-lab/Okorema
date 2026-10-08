@@ -3,7 +3,6 @@ import type { ExpoConfig } from "expo/config";
 const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "";
 const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? "";
 const androidClientId = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? "";
-const iosUrlScheme = process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME || "com.googleusercontent.apps.000000-placeholder";
 
 const locationCopy =
   "Okorema! uses your location for place reminders you set. 場所リマインダーのために位置情報を使います。";
@@ -18,7 +17,6 @@ const config: ExpoConfig = {
   userInterfaceStyle: "light",
   ios: {
     bundleIdentifier: "app.okorema.mobile",
-    deploymentTarget: "17.0",
     supportsTablet: false,
     icon: "./assets/images/icon.png",
     entitlements: {
@@ -63,12 +61,9 @@ const config: ExpoConfig = {
   },
   plugins: [
     "expo-router",
-    "./plugins/withReleaseApkSize",
-    "expo-dev-client",
     "expo-sqlite",
     "expo-secure-store",
     "expo-localization",
-    "expo-sharing",
     "expo-font",
     [
       "expo-splash-screen",
@@ -90,65 +85,16 @@ const config: ExpoConfig = {
         locationWhenInUsePermission: locationCopy,
         locationAlwaysAndWhenInUsePermission: locationCopy,
         locationAlwaysPermission: locationCopy,
-        isIosBackgroundLocationEnabled: true,
-        isAndroidBackgroundLocationEnabled: true,
-        isAndroidForegroundServiceEnabled: true,
+        isIosBackgroundLocationEnabled: false,
+        isAndroidBackgroundLocationEnabled: false,
+        isAndroidForegroundServiceEnabled: false,
         motionUsagePermission: false,
       },
     ],
-    [
-      "expo-build-properties",
-      {
-        ios: { deploymentTarget: "17.0" },
-        android: {
-          minSdkVersion: 34,
-          compileSdkVersion: 36,
-          targetSdkVersion: 36,
-          buildArchs: ["arm64-v8a"],
-          enableMinifyInReleaseBuilds: true,
-          enableShrinkResourcesInReleaseBuilds: true,
-          enableBundleCompression: true,
-          useLegacyPackaging: true,
-          extraProguardRules: [
-            "-keep class expo.modules.okoremanative.** { *; }",
-            "-keep class expo.modules.okoremanative.AlarmReceiver { *; }",
-            "-keep class expo.modules.okoremanative.BootReceiver { *; }",
-            "-keep class expo.modules.okoremanative.FullScreenAlarmActivity { *; }",
-            "-keep class expo.modules.okoremanative.OkoremaWidgetProvider { *; }",
-          ].join("\n"),
-        },
-      },
-    ],
-    "expo-background-task",
-    "expo-iap",
     "@react-native-community/datetimepicker",
-    [
-      "@react-native-google-signin/google-signin",
-      { iosUrlScheme },
-    ],
-    [
-      "expo-widgets",
-      {
-        enableAndroid: false,
-        widgets: [
-          {
-            name: "OkoremaHome",
-            displayName: "Okorema!",
-            description: "Next reminder, overdue count, today, and the last 7 days.",
-            supportedFamilies: ["systemSmall", "systemMedium", "systemLarge"],
-            contentMarginsDisabled: false,
-            ios: {
-              supportedFamilies: ["systemSmall", "systemMedium", "systemLarge"],
-            },
-            android: null,
-          },
-        ],
-      },
-    ],
   ],
   experiments: {
     typedRoutes: true,
-    reactCompiler: true,
   },
   extra: {
     googleWebClientId: webClientId,

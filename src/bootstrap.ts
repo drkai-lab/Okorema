@@ -1,15 +1,11 @@
 import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
 import * as TaskManager from "expo-task-manager";
-import { Platform } from "react-native";
-
-import { isExpoGo } from "@/runtime/expoGo";
 
 import { occurrenceKeyFor } from "@/domain/types";
 import { deviceLocale } from "@/i18n";
 import { GEOFENCE_TASK } from "@/services/places";
 import { noteDelivered, readNativeActions } from "@/services/scheduler";
-import { syncGoogle } from "@/services/sync";
 
 import {
   commitComplete,
@@ -20,8 +16,6 @@ import {
   openAppRepository,
   reschedule,
 } from "@/state/actions";
-
-export const SYNC_TASK = "okorema-sync";
 
 type GeofenceTaskData = {
   eventType: Location.GeofencingEventType;
@@ -60,25 +54,6 @@ if (!TaskManager.isTaskDefined(GEOFENCE_TASK)) {
       await reschedule(repo, deviceLocale(), isProFrom(settings));
       emitDataChanged();
     });
-  });
-}
-
-if (!TaskManager.isTaskDefined(SYNC_TASK)) {
-  TaskManager.defineTask(SYNC_TASK, async () => {
-    const BackgroundTask = await import("expo-background-task");
-    try {
-      const repo = await openAppRepository();
-      const result = await syncGoogle(repo);
-      if (result.error) {
-        return BackgroundTask.BackgroundTaskResult.Failed;
-      }
-      emitDataChanged();
-      const settings = await repo.settings();
-      await reschedule(repo, deviceLocale(), isProFrom(settings));
-      return BackgroundTask.BackgroundTaskResult.Success;
-    } catch {
-      return BackgroundTask.BackgroundTaskResult.Failed;
-    }
   });
 }
 
@@ -142,40 +117,9 @@ export async function consumeNativeActions(): Promise<void> {
 }
 
 export async function ensureBackgroundSync(): Promise<void> {
-  if (Platform.OS === "web" || isExpoGo()) {
-    return;
-  }
-  try {
-    const defined = TaskManager.isTaskDefined(SYNC_TASK);
-    if (!defined) {
-      return;
-    }
-    const BackgroundTask = await import("expo-background-task");
-    await BackgroundTask.registerTaskAsync(SYNC_TASK, { minimumInterval: 15 });
-  } catch {
-    // Background task registration is unavailable on simulators and web.
-  }
+  return;
 }
 
 export function listenForIosWidgetCompletions(): () => void {
-  if (Platform.OS !== "ios" || isExpoGo()) {
-    return () => undefined;
-  }
-  let remove: () => void = () => undefined;
-  let cancelled = false;
-  void import("@/services/surfaces.ios").then((surfaces) => {
-    if (cancelled) {
-      return;
-    }
-    remove = surfaces.listenForWidgetCompletions((reminderId, occurrenceKey) => {
-      void enqueue(async () => {
-        const repo = await openAppRepository();
-        await commitComplete(repo, reminderId, occurrenceKey, `widget:${reminderId}:${occurrenceKey}`);
-      });
-    });
-  });
-  return () => {
-    cancelled = true;
-    remove();
-  };
+  return () => undefined;
 }
