@@ -1,0 +1,4 @@
+<resources>
+  <string name="widget_description">次の予定、期限超過、今日の一覧、直近7日の完了数</string>
+  <string name="widget_complete">完了</string>
+</resources>

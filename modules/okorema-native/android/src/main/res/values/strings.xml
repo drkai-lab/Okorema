@@ -1,0 +1,4 @@
+<resources>
+  <string name="widget_description">Next reminder, overdue count, today, and completions from the last 7 days</string>
+  <string name="widget_complete">Done</string>
+</resources>

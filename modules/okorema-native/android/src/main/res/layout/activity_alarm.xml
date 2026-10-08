@@ -1,0 +1,53 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="#F3EEE6"
+  android:gravity="center_horizontal"
+  android:orientation="vertical"
+  android:padding="28dp">
+
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Okorema!"
+    android:textColor="#C4491D"
+    android:textSize="18sp"
+    android:textStyle="bold" />
+
+  <TextView
+    android:id="@+id/alarm_title"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="28dp"
+    android:gravity="center"
+    android:textColor="#241C16"
+    android:textSize="28sp"
+    android:textStyle="bold" />
+
+  <TextView
+    android:id="@+id/alarm_body"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="12dp"
+    android:gravity="center"
+    android:textColor="#6E6258"
+    android:textSize="16sp" />
+
+  <Button
+    android:id="@+id/alarm_done"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:layout_marginTop="36dp"
+    android:backgroundTint="#1F7A4D"
+    android:textColor="#FFFFFF"
+    android:textSize="18sp" />
+
+  <Button
+    android:id="@+id/alarm_snooze"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:layout_marginTop="12dp"
+    android:backgroundTint="#C4491D"
+    android:textColor="#FFFFFF"
+    android:textSize="18sp" />
+</LinearLayout>

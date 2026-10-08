@@ -1,0 +1,10 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["OkoremaNativeModule"],
+    "podspecPath": "./ios/OkoremaNative.podspec"
+  },
+  "android": {
+    "modules": ["expo.modules.okoremanative.OkoremaNativeModule"]
+  }
+}

@@ -1,0 +1,42 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+  <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+  <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+  <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
+  <uses-permission android:name="android.permission.VIBRATE" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+  <application>
+    <receiver
+      android:name="expo.modules.okoremanative.AlarmReceiver"
+      android:exported="false" />
+    <receiver
+      android:name="expo.modules.okoremanative.BootReceiver"
+      android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+      </intent-filter>
+    </receiver>
+    <receiver
+      android:name="expo.modules.okoremanative.OkoremaWidgetProvider"
+      android:exported="true"
+      android:label="Okorema!">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="app.okorema.WIDGET_COMPLETE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/okorema_widget_info" />
+    </receiver>
+    <activity
+      android:name="expo.modules.okoremanative.FullScreenAlarmActivity"
+      android:excludeFromRecents="true"
+      android:exported="false"
+      android:launchMode="singleInstance"
+      android:showWhenLocked="true"
+      android:turnScreenOn="true"
+      android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar" />
+  </application>
+</manifest>

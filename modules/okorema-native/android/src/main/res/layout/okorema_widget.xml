@@ -1,0 +1,63 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/widget_root"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="#FFFBF7"
+  android:orientation="vertical"
+  android:padding="14dp">
+
+  <TextView
+    android:id="@+id/brand"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Okorema!"
+    android:textColor="#C4491D"
+    android:textSize="12sp"
+    android:textStyle="bold" />
+
+  <TextView
+    android:id="@+id/next_title"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="4dp"
+    android:textColor="#241C16"
+    android:textSize="16sp"
+    android:textStyle="bold" />
+
+  <TextView
+    android:id="@+id/next_due"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#6E6258"
+    android:textSize="13sp" />
+
+  <TextView
+    android:id="@+id/counts"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="6dp"
+    android:textColor="#C4491D"
+    android:textSize="12sp" />
+
+  <TextView
+    android:id="@+id/today_1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:textColor="#241C16"
+    android:textSize="14sp" />
+
+  <TextView
+    android:id="@+id/today_2"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#241C16"
+    android:textSize="14sp" />
+
+  <TextView
+    android:id="@+id/today_3"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:textColor="#241C16"
+    android:textSize="14sp" />
+</LinearLayout>
