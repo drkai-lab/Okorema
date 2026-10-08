@@ -63,6 +63,7 @@ const config: ExpoConfig = {
   },
   plugins: [
     "expo-router",
+    "./plugins/withReleaseApkSize",
     "expo-dev-client",
     "expo-sqlite",
     "expo-secure-store",
@@ -99,7 +100,23 @@ const config: ExpoConfig = {
       "expo-build-properties",
       {
         ios: { deploymentTarget: "17.0" },
-        android: { minSdkVersion: 34, compileSdkVersion: 36, targetSdkVersion: 36 },
+        android: {
+          minSdkVersion: 34,
+          compileSdkVersion: 36,
+          targetSdkVersion: 36,
+          buildArchs: ["arm64-v8a"],
+          enableMinifyInReleaseBuilds: true,
+          enableShrinkResourcesInReleaseBuilds: true,
+          enableBundleCompression: true,
+          useLegacyPackaging: true,
+          extraProguardRules: [
+            "-keep class expo.modules.okoremanative.** { *; }",
+            "-keep class expo.modules.okoremanative.AlarmReceiver { *; }",
+            "-keep class expo.modules.okoremanative.BootReceiver { *; }",
+            "-keep class expo.modules.okoremanative.FullScreenAlarmActivity { *; }",
+            "-keep class expo.modules.okoremanative.OkoremaWidgetProvider { *; }",
+          ].join("\n"),
+        },
       },
     ],
     "expo-background-task",
