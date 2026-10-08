@@ -3,7 +3,8 @@ import { completeReminder, snoozeAll, snoozeReminder, undoReminder } from "@/dom
 import { overdueReminders } from "@/domain/overdue";
 import type { BudgetReport } from "@/domain/schedule";
 import { freshClocks, occurrenceKeyFor, type Reminder, type ReminderList } from "@/domain/types";
-import { createId, openRepository, type Repository } from "@/db/repository";
+import { openRepository } from "@/db/openRepository";
+import { createId, type Repository } from "@/db/repository";
 import { deviceLocale, type AppLocale } from "@/i18n";
 import { LIST_COLORS, LIST_ICONS } from "@/domain/appearance";
 import { refreshSchedules } from "@/services/scheduler";

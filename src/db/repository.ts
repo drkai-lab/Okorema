@@ -1,5 +1,3 @@
-import * as SQLite from "expo-sqlite";
-
 import type { Mapping } from "@/domain/sync/mapping";
 import {
   freshClocks,
@@ -12,7 +10,7 @@ import {
   type RepeatRule,
 } from "@/domain/types";
 
-const SCHEMA = `
+export const SCHEMA = `
 PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS lists (
   id TEXT PRIMARY KEY NOT NULL,
@@ -148,8 +146,31 @@ function mapReminder(row: ReminderRow): Reminder {
   };
 }
 
-export class Repository {
-  constructor(private readonly db: SQLite.SQLiteDatabase) {}
+type SqlDb = {
+  execAsync(source: string): Promise<void>;
+  runAsync(source: string, ...params: (string | number | null)[]): Promise<unknown>;
+  getAllAsync<T>(source: string, ...params: (string | number | null)[]): Promise<T[]>;
+  withTransactionAsync(task: () => Promise<void>): Promise<void>;
+};
+
+export interface Repository {
+  lists(): Promise<ReminderList[]>;
+  reminders(): Promise<Reminder[]>;
+  logs(): Promise<CompletionLog[]>;
+  escalation(): Promise<EscalationState[]>;
+  mappings(): Promise<Mapping[]>;
+  settings(): Promise<Record<string, string>>;
+  saveList(list: ReminderList): Promise<void>;
+  saveReminder(reminder: Reminder): Promise<void>;
+  saveLog(log: CompletionLog): Promise<void>;
+  saveEscalation(states: EscalationState[]): Promise<void>;
+  replaceMappings(mappings: Mapping[]): Promise<void>;
+  setSetting(key: string, value: string): Promise<void>;
+  replaceAll(lists: ReminderList[], reminders: Reminder[], logs: CompletionLog[]): Promise<void>;
+}
+
+export class SqliteRepository implements Repository {
+  constructor(private readonly db: SqlDb) {}
 
   async lists(): Promise<ReminderList[]> {
     const rows = await this.db.getAllAsync<ListRow>("SELECT * FROM lists ORDER BY sort_order ASC, created_at ASC");
@@ -312,12 +333,6 @@ export class Repository {
       }
     });
   }
-}
-
-export async function openRepository(): Promise<Repository> {
-  const db = await SQLite.openDatabaseAsync("okorema.db");
-  await db.execAsync(SCHEMA);
-  return new Repository(db);
 }
 
 export function createId(): string {
