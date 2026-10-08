@@ -1,3 +1,5 @@
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
@@ -13,11 +15,12 @@ SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 function Root() {
   const app = useApp();
+  const [fontsLoaded, fontError] = useFonts(MaterialCommunityIcons.font);
   useEffect(() => {
-    if (app.ready) {
+    if (app.ready && (fontsLoaded || fontError)) {
       SplashScreen.hideAsync().catch(() => undefined);
     }
-  }, [app.ready]);
+  }, [app.ready, fontError, fontsLoaded]);
 
   if (!app.ready) {
     return (

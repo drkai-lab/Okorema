@@ -164,7 +164,7 @@ export function AddButton({ label, onPress }: { label: string; onPress: () => vo
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
-      style={({ pressed }) => [styles.add, { bottom: Math.max(insets.bottom, 10) + 18 }, pressed && styles.pressed]}
+      style={({ pressed }) => [styles.add, { bottom: Math.max(insets.bottom, 8) + 76 }, pressed && styles.pressed]}
     >
       <Text style={styles.addPlus}>+</Text>
     </Pressable>

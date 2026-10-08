@@ -1,4 +1,5 @@
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
+import { useLayoutEffect } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { colorById } from "@/domain/appearance";
@@ -9,8 +10,12 @@ import { Button, Card, EmptyState, H1, Screen } from "@/ui/ui";
 
 export default function ListDetail() {
   const app = useApp();
+  const navigation = useNavigation();
   const params = useLocalSearchParams<{ id: string }>();
   const list = app.lists.find((item) => item.id === params.id && !item.deletedAt);
+  useLayoutEffect(() => {
+    navigation.setOptions({ title: list?.name ?? app.messages.list });
+  }, [app.messages.list, list?.name, navigation]);
   if (!list) {
     return (
       <Screen>

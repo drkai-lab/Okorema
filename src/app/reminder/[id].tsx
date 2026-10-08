@@ -1,6 +1,6 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
+import { useLayoutEffect, useState } from "react";
 import { Modal, Platform, Pressable, Text, TextInput, View } from "react-native";
 
 import { GEOFENCE_RADII, PRE_NOTIFY_OPTIONS, freshClocks, occurrenceKeyFor, type Geofence, type PersistenceLevel, type Reminder, type RepeatRule } from "@/domain/types";
@@ -31,6 +31,10 @@ export default function ReminderEditor() {
 
 function ReminderForm({ existing, initialListId }: { existing?: Reminder; initialListId: string }) {
   const app = useApp();
+  const navigation = useNavigation();
+  useLayoutEffect(() => {
+    navigation.setOptions({ title: existing?.title || app.messages.addReminder });
+  }, [app.messages.addReminder, existing?.title, navigation]);
   const lists = app.lists.filter((list) => !list.deletedAt);
   const [title, setTitle] = useState(existing?.title ?? "");
   const [notes, setNotes] = useState(existing?.notes ?? "");

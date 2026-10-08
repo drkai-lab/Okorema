@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { formatDue } from "@/i18n";
@@ -24,8 +24,8 @@ export function OverdueGate() {
   }
   const target = overdue.find((reminder) => reminder.id === pendingDelete) ?? null;
   return (
-    <View style={styles.cover} accessibilityViewIsModal>
-      <View style={[styles.panel, { paddingTop: insets.top + space.lg, paddingBottom: insets.bottom + space.lg }]}>
+    <Modal visible animationType="fade" onRequestClose={() => undefined} statusBarTranslucent>
+      <View style={[styles.cover, { paddingTop: insets.top + space.lg, paddingBottom: insets.bottom + space.lg }]} accessibilityViewIsModal>
         <Text style={styles.kicker}>Okorema!</Text>
         <Text style={styles.title}>{app.messages.overdueTitle}</Text>
         <Text style={styles.body}>{app.messages.overdueBody}</Text>
@@ -43,7 +43,6 @@ export function OverdueGate() {
         {overdue.length > 1 ? (
           <Button label={app.messages.snoozeAll} tone="secondary" onPress={() => void app.snoozeAllOverdue()} disabled={app.busy} />
         ) : null}
-      </View>
       <Modal visible={Boolean(target)} transparent animationType="fade" onRequestClose={() => setPendingDelete(null)}>
         <View style={styles.modal}>
           <View style={styles.modalCard}>
@@ -63,14 +62,13 @@ export function OverdueGate() {
           </View>
         </View>
       </Modal>
-      <Pressable accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.blocker} />
     </View>
+    </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  cover: { ...StyleSheet.absoluteFill, backgroundColor: colors.paper, zIndex: 50 },
-  panel: { flex: 1, paddingHorizontal: space.md, gap: space.md },
+  cover: { flex: 1, backgroundColor: colors.paper, paddingHorizontal: space.md, gap: space.md },
   kicker: { color: colors.persimmon, fontWeight: "700", letterSpacing: 0.4 },
   title: { fontSize: 32, lineHeight: 38, fontWeight: "700", color: colors.ink },
   body: { fontSize: 16, lineHeight: 24, color: colors.inkSoft },
@@ -80,5 +78,4 @@ const styles = StyleSheet.create({
   actions: { gap: space.sm },
   modal: { flex: 1, backgroundColor: "rgba(36,28,22,0.45)", justifyContent: "flex-end", padding: space.md },
   modalCard: { backgroundColor: colors.card, borderRadius: 20, padding: space.lg, gap: space.md },
-  blocker: { position: "absolute", width: 0, height: 0 },
 });
