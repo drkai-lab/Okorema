@@ -1,0 +1,12 @@
+name = "okorema-updates"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+
+# Static assets are cheaper than R2 for this app: Cloudflare does not bill
+# asset requests, and each file stays under the 25 MiB free-plan limit.
+# The Worker only runs for the manifest routes.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = ["/", "/manifest"]
+not_found_handling = "none"

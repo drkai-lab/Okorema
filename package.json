@@ -46,7 +46,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run src/domain"
+    "test": "vitest run src/domain",
+    "publish:worker": "npm --prefix server install && node server/scripts/publish.mjs"
   },
   "private": true
 }

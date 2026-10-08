@@ -58,6 +58,41 @@ npx expo start --go --tunnel
 
 `--go` は Expo Go 用の QR です。別のネットワークにいる iPhone には `--tunnel` が要ります。同じ LAN なら `npx expo start --go` で足ります。トンネルは Expo のアカウントログインを求めることがあります。
 
+## PC の開発サーバーなしで開く（Cloudflare Workers）
+
+App Store の Expo Go は、`exps://` を `https://` に読み替えて、そのホストから Expo Updates のマニフェストを取ります。実装は SDK 54 の `EXAppLoaderExpoUpdates.m` です。署名は任意で、`codeSigningAllowUnsignedManifests` が有効なので、このサーバーは署名しません。スコープキーは `@anonymous/` で始めます。
+
+同じファイルが Hermes バイトコード（先頭マジック `c61fbc03c103191f`）を、`u.expo.dev` 以外から受け取ると `EXPERIENCE_HERMES_BUNDLE_NOT_SUPPORTED` で落とします。そのため公開は `npx expo export --no-bytecode` の JavaScript です。画像とフォントは、Expo Go だと `classic-assets.eascdn.net` に取りに行って 404 になるので、バンドル内の `fileUris` をこのホストの `/assets/<ハッシュ>.<拡張子>` に書き換えています。
+
+```bash
+npm install
+export CLOUDFLARE_API_TOKEN=...
+export CLOUDFLARE_ACCOUNT_ID=...
+export WORKER_HOST=okorema-updates.<アカウントのサブドメイン>.workers.dev
+npm run publish:worker
+```
+
+`WORKER_HOST` はスキームなしのホスト名です。初回デプロイのあと、Wrangler が表示した `https://` のホストを入れて、もう一度 `npm run publish:worker` を実行すると QR がその URL になります。未設定の QR はローカルの `exps://127.0.0.1:8791` です。QR の PNG は `server/dist/expo-go-qr.png` です。
+
+iPhone では App Store の Expo Go でその QR を読むか、`exps://` の URL を Expo Go に貼ります。コードを直したあとは、同じコマンドをもう一度実行します。バンドルとアセットの URL は内容のハッシュなので、古いファイルはキャッシュされたままで、マニフェストだけが新しいファイルを指します。
+
+トークンが無いときはエクスポートと `server/public` への配置、QR の作成まで行い、`wrangler deploy` はしません。ローカル確認は `server/` で `npx wrangler dev --port 8791` です。
+
+### Cloudflare の無料枠
+
+Workers の無料枠は 1 日 10 万リクエスト、CPU 10 ミリ秒です。静的アセットへのリクエストは課金されず、ファイル数は 2 万、1 ファイル 25 MiB までです（https://developers.cloudflare.com/workers/platform/limits/ ）。このアプリの JS は約 2.4 MB、フォントを含めても 1 ファイルの上限に収まります。アセットは R2 より静的アセットの方が安く、バケットも要りません。
+
+### API トークンの権限
+
+アカウント ID は `CLOUDFLARE_ACCOUNT_ID` で渡します。トークンは次だけで足ります。
+
+- 初回（Worker を作る）: アカウントの Workers Scripts を **Admin**（新しい権限名では Workers 製品の Admin）。https://developers.cloudflare.com/workers/authorization/
+- 2 回目以降の更新: その Worker に対する **Editor**、または Workers Scripts の **Edit**
+- アカウントの Account Settings を **Read**
+- ユーザーの User Details と Memberships を **Read**（Wrangler がアカウントを解決するとき）
+
+R2 は使いません。Workers R2 Storage の権限は要りません。ゾーンの Workers Routes も、workers.dev のサブドメインだけで出すなら要りません。
+
 ### このブランチで動かないもの
 
 依存関係から外してあり、import もしません。
@@ -83,7 +118,7 @@ npx expo start --go --tunnel
    npx eas-cli update --channel preview --platform ios --message "Expo Go preview"
    ```
 
-4. 出たリンクまたは QR を、**SDK 57 の Expo Go**（上記の `eas go` で入れたもの）で開く。App Store の Expo Go（SDK 54）では同じリンクも開けません。
+4. 出たリンクまたは QR を、App Store の Expo Go（SDK 54）で開く。Expo アカウントが要ります。アカウントを作らずに配る場合は、上の Cloudflare Workers を使います。
 5. EAS Update に含まれるのは JavaScript だけです。カスタムのネイティブコードは入らないので、制限は上の Expo Go と同じです。
 
 この環境にはユーザーの Expo アカウントが無いため、公開用の expo.dev リンクは作っていません。ログインは各自の PC で行ってください。

@@ -45,3 +45,10 @@ example
 
 # local native module build output
 modules/okorema-native/android/build/
+
+# Cloudflare publish output (bundles, QR). Do not commit.
+server/.export/
+server/public/*
+!server/public/.gitkeep
+server/dist/
+server/.wrangler/

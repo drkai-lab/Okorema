@@ -1,0 +1,14 @@
+{
+  "name": "okorema-updates",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8791",
+    "deploy": "wrangler deploy",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4",
+    "wrangler": "^4.42.1"
+  }
+}
