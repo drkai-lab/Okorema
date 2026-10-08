@@ -1,13 +1,21 @@
+import Constants from "expo-constants";
 import { router } from "expo-router";
-import { Platform, Text } from "react-native";
+import { useRef, useState } from "react";
+import { Platform, Pressable, Text } from "react-native";
 
 import { isExpoGo } from "@/runtime/expoGo";
 import { useApp } from "@/state/store";
 import { colors } from "@/ui/theme";
 import { Banner, Button, Card, H1, Lead, Screen } from "@/ui/ui";
 
+const OWNER_TAPS = 7;
+
 export default function SettingsScreen() {
   const app = useApp();
+  const taps = useRef(0);
+  const [revealed, setRevealed] = useState(false);
+  const devOn = app.settings.proDevUnlock === "1";
+  const version = Constants.expoConfig?.version ?? "1.0.0";
   return (
     <Screen>
       <H1>{app.messages.settings}</H1>
@@ -48,12 +56,33 @@ export default function SettingsScreen() {
       <Card>
         <Text style={{ fontWeight: "700", color: colors.ink }}>{app.messages.about}</Text>
         <Text style={{ color: colors.inkSoft }}>{app.messages.aboutBody}</Text>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            taps.current += 1;
+            if (taps.current >= OWNER_TAPS) {
+              setRevealed(true);
+            }
+          }}
+        >
+          <Text style={{ color: colors.inkSoft }}>{app.messages.versionLabel(version)}</Text>
+        </Pressable>
       </Card>
-      {__DEV__ || isExpoGo() ? (
+      {revealed || devOn ? (
+        <Card>
+          <Text style={{ fontWeight: "700", color: colors.ink }}>{app.messages.ownerProTitle}</Text>
+          <Text style={{ color: colors.inkSoft }}>{app.messages.ownerProBody}</Text>
+          <Button
+            label={devOn ? app.messages.ownerProLock : app.messages.proDev}
+            tone="secondary"
+            onPress={() => void app.toggleDevPro()}
+          />
+        </Card>
+      ) : null}
+      {__DEV__ ? (
         <Card>
           <Text style={{ fontWeight: "700", color: colors.ink }}>{app.messages.devSection}</Text>
-          <Button label={app.messages.proDev} tone="secondary" onPress={() => void app.toggleDevPro()} />
-          {__DEV__ ? <Button label={app.messages.seedDemo} tone="secondary" onPress={() => void app.seed()} /> : null}
+          <Button label={app.messages.seedDemo} tone="secondary" onPress={() => void app.seed()} />
         </Card>
       ) : null}
       {app.notice ? <Text style={{ color: colors.ink }}>{app.notice}</Text> : null}
